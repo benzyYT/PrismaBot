@@ -35,7 +35,7 @@ async def on_ready():
     print(f"Bot | Name:     {format(client.user.name)}")
     print(f"Bot | Server:   {len(client.guilds)}")
     print(f"\n")
-    print(f"Der Bot ist bereit genutzt zu werden")
+    print(f"The bot is ready to be used")
     
     
 @client.event 
