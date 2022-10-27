@@ -36,6 +36,7 @@ async def on_ready():
     print(f"Bot | Server:   {len(client.guilds)}")
     print(f"\n")
     print(f"The bot is ready to be used")
+    #await client.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="to your commands"))
     
     
 @client.event 
@@ -48,6 +49,9 @@ async def on_command_error(ctx, error):
         await ctx.send(embed=embed)
     elif isinstance(error, commands.CommandInvokeError):
         embed = discord.Embed(title="Keine Berechtigung", description=f'⛔ Dazu hat dieser Bot keine Berechtigung `(E: 403)`', color=0xff0000) 
+        await ctx.send(embed=embed)
+    elif isinstance(error, commands.BadArgument):
+        embed = discord.Embed(title="Falsche Angabe", description=f'⛔ Du musst eine Zahl angeben', color=0xff0000) 
         await ctx.send(embed=embed)
     else:
         embed = discord.Embed(title="ERROR", description=f'⛔ Fehler:\n```{error}```', color=0xff0000) 
@@ -149,6 +153,19 @@ async def news(ctx, *, text):
         await message.delete()
         await ctx.send(f'{text}')
 # Say Command #
+
+
+# Clear Command #
+@client.command()
+@commands.has_permissions(manage_messages=True)
+async def clear(ctx, amount: int):
+    if amount > 1000:
+        embed = discord.Embed(title='Zu viele Nachrichten', description='Der Bot kann nicht über 1000 Nachrichten löschen!', color=0xff0000)
+        await ctx.send(embed=embed)
+    else:
+        await ctx.message.delete()
+        await asyncio.sleep(0.1)
+        await ctx.channel.purge(limit=amount)
 
 
     
