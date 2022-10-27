@@ -1,6 +1,8 @@
 import asyncio
 import datetime
 import os
+import io
+from traceback import format_exception
 import discord
 from discord.ext import commands
 import mysql.connector
@@ -14,6 +16,7 @@ refresh = RefreshOption.LOG | RefreshOption.THREADS
 vars = dotenv_values(".env")
 TOKEN = vars["TOKEN"]
 whitelisted = vars["WHITELIST_IDS"]
+from aioconsole import aexec
 
 
 
@@ -33,6 +36,22 @@ async def on_ready():
     print(f"Bot | Server:   {len(client.guilds)}")
     print(f"\n")
     print(f"Der Bot ist bereit genutzt zu werden")
+    
+    
+@client.event 
+async def on_command_error(ctx, error): 
+    if isinstance(error, commands.CommandNotFound): 
+        embed = discord.Embed(title="Command nicht gefunden", description=f'⛔ Diesen Command gibt es nicht', color=0xff0000) 
+        await ctx.send(embed=embed)
+    elif isinstance(error, commands.MemberNotFound):
+        embed = discord.Embed(title="Mitglied nicht gefunden", description=f'⛔ Dieses Mitglied gibt es nicht', color=0xff0000) 
+        await ctx.send(embed=embed)
+    elif isinstance(error, commands.CommandInvokeError):
+        embed = discord.Embed(title="Keine Berechtigung", description=f'⛔ Dazu hat dieser Bot keine Berechtigung `(E: 403)`', color=0xff0000) 
+        await ctx.send(embed=embed)
+    else:
+        embed = discord.Embed(title="ERROR", description=f'⛔ Fehler:\n```{error}```', color=0xff0000) 
+        await ctx.send(embed=embed)
 # On Ready Event #
 
 
@@ -66,7 +85,7 @@ async def leaveguild(ctx, *args):
         if len(args) > 1:
             embed = discord.Embed(title='Ungültige Angabe', description='Bitte gib eine ID von einem Server an, den ich verlassen soll!', color=0xff0000)
             await ctx.send(embed=embed)
-        if len(args) < 1:
+        elif len(args) < 1:
             embed = discord.Embed(title='Ungültige Angabe', description='Bitte gib eine ID von einem Server an, den ich verlassen soll!', color=0xff0000)
             await ctx.send(embed=embed)
         else:
@@ -81,6 +100,55 @@ async def leaveguild(ctx, *args):
                 embed.add_field(name='Server ID', value=f'`{args[0]}`', inline=False)
                 await ctx.send(embed=embed)
 # Server Leave Command #
+
+
+# Server Auflisten Command #
+@client.command()
+async def listguilds(ctx):
+    if f'{ctx.author.id}' not in whitelisted:
+        embed = discord.Embed(title='Keine Berechtigung', description='Dies ist ein Entwicklercommand, dazu hast du keine Berechtigung!', color=0xff0000)
+        await ctx.send(embed=embed)
+    else:
+        guilds = [f'{guild.id} | {guild.name}' for guild in client.guilds]
+        embed = discord.Embed(title='Serverliste', description=f'Hier ist die Liste an Servern:\n`{guilds}`', color=0xff0000)
+        await ctx.send(embed=embed)
+# Server Auflisten Command #
+
+
+
+# Kick Command #
+@client.command()
+@commands.has_permissions(kick_members=True)
+async def kick(ctx, Member: discord.Member):
+    if Member:
+        await ctx.guild.kick(Member)
+        embed = discord.Embed(title='Member gekickt', description=f'Ich habe den Nutzer `{Member}` erfolgreich gekickt!', color=0xff0000)
+        await ctx.send(embed=embed)
+# Kick Command #
+
+
+# Ban Command #
+@client.command()
+@commands.has_permissions(ban_members=True)
+async def ban(ctx, Member: discord.Member):
+    if Member:
+        await ctx.guild.ban(Member)
+        embed = discord.Embed(title='Member gebannt', description=f'Ich habe den Nutzer `{Member}` erfolgreich gebannt!', color=0xff0000)
+        await ctx.send(embed=embed)
+# Ban Command #
+
+
+# Say Command #
+@client.command()
+async def say(ctx, *, text):
+    message = ctx.message
+    await message.delete()
+    await ctx.send(f'{text}')
+# Say Command #
+
+
+    
+
 
 
 
