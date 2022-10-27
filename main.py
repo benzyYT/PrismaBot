@@ -140,10 +140,14 @@ async def ban(ctx, Member: discord.Member):
 
 # Say Command #
 @client.command()
-async def say(ctx, *, text):
-    message = ctx.message
-    await message.delete()
-    await ctx.send(f'{text}')
+async def news(ctx, *, text):
+    if f'{ctx.author.id}' not in whitelisted:
+        embed = discord.Embed(title='Keine Berechtigung', description='Dies ist ein Entwicklercommand, dazu hast du keine Berechtigung!', color=0xff0000)
+        await ctx.send(embed=embed)
+    else:
+        message = ctx.message
+        await message.delete()
+        await ctx.send(f'{text}')
 # Say Command #
 
 
